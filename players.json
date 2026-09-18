@@ -1,0 +1,12 @@
+[
+  {
+    "id": "8ff8ed19-66f4-467b-8976-0cfe523d7cdb",
+    "name": "testuser",
+    "hp": 100,
+    "potions": 3,
+    "attack": 30,
+    "defence": 30,
+    "coin": 0,
+    "kill_cnt": 0
+  }
+]
