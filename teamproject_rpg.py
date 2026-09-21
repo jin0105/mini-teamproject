@@ -86,7 +86,7 @@ mon.load_from_json_string(MONSTER_JSON_DATA)
 
 
 # --- 4. 플레이어 관리 구현 ---
-DATA_FILE = "class_study/teamproject/players.json"
+DATA_FILE = "players.json"
 
 
 class ManagePlayer:
