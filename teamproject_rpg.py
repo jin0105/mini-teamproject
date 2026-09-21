@@ -372,7 +372,7 @@ def join(player):
     m_word = KWord(c_mon.name)
 
     print("=" * 40)
-    print(f"{m_word.word.과와} 마주쳤다!")
+    print(f"{m_word.과와} 마주쳤다!")
     print("=" * 40)
     time.sleep(1)
 

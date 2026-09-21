@@ -6,7 +6,7 @@
     "potions": 3,
     "attack": 50,
     "defence": 50,
-    "coin": 0,
+    "coin": 50,
     "kill_cnt": 0
   }
 ]
