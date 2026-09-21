@@ -29,8 +29,12 @@ class KWord:
         return f"{self.word}{'을' if self.has_batchim else '를'}"
 
     @property
-    def 와과(self):
+    def 과와(self):
         return f"{self.word}{'과' if self.has_batchim else '와'}"
+
+    @property
+    def 의(self):
+        return f"{self.word}의"
 
     def __str__(self):
         return self.word
@@ -368,9 +372,7 @@ def join(player):
     m_word = KWord(c_mon.name)
 
     print("=" * 40)
-    # print(f'{m_word.와과 if hasattr(m_word, "와과") else m_word.word + "와"} 마주쳤다!')
-    # 기본 KWord 구조에 맞추어 아래와 같이 적용
-    print(f"{m_word.word}와 마주쳤다!")
+    print(f"{m_word.word.과와} 마주쳤다!")
     print("=" * 40)
     time.sleep(1)
 
@@ -524,36 +526,32 @@ def store(player, max_potion=10):
             print("상점을 나갑니다.")
             break
 
-        if choice in item_list:
-            name, price, stat_type, stat_val = item_list[choice]
-            item_word = KWord(name)  # KWord 적용
-
-            if choice == "1":
-                if player.potions >= max_potion:
-                    print("포션을 더 이상 소지할 수 없습니다.")
-                elif player.coin < price:
-                    print("골드가 부족합니다.")
-                else:
-                    player.coin -= price
-                    player.potions += 1
-                    print(
-                        f"{item_word.을를} 구매했습니다. (현재 포션: {player.potions}개)"
-                    )
-            else:
-                if player.coin < price:
-                    print("골드가 부족합니다.")
-                else:
-                    player.coin -= price
-                    if stat_type == "attack":
-                        player.attack += stat_val
-                        print(
-                            f"{item_word.을를} 구매 및 장착하여 공격력이 {stat_val} 증가했습니다. (현재 공격력: {player.attack})"
-                        )
-                    elif stat_type == "defence":
-                        player.defence += stat_val
-                        print(
-                            f"{item_word.을를} 구매 및 장착하여 방어력이 {stat_val} 증가했습니다. (현재 방어력: {player.defence})"
-                        )
+        elif choice in item_list:
+            for key, (name, price, stat_type, stat_val) in item_list.items():
+                if choice == key:
+                    item_word = KWord(name)
+                    if choice == "1" and player.potions >= max_potion:
+                        print("포션을 더 이상 소지할 수 없습니다.")
+                    elif player.coin < price:
+                        print("골드가 부족합니다.")
+                    else:
+                        player.coin -= price
+                        if choice == "1":
+                            player.potions += 1
+                            print(
+                                f"{item_word.을를} 구매했습니다. (현재 포션: {player.potions}개)"
+                            )
+                        else:
+                            if stat_type == "attack":
+                                player.attack += stat_val
+                                print(
+                                    f"{item_word.을를} 구매 및 장착하여 공격력이 {stat_val} 증가했습니다. (현재 공격력: {player.attack})"
+                                )
+                            elif stat_type == "defence":
+                                player.defence += stat_val
+                                print(
+                                    f"{item_word.을를} 구매 및 장착하여 방어력이 {stat_val} 증가했습니다. (현재 방어력: {player.defence})"
+                                )
         else:
             print("잘못된 입력입니다.")
 
@@ -561,7 +559,7 @@ def store(player, max_potion=10):
 # --- 사우나 ---
 def sauna(player, max_hp=100):
     price = 50
-    heal = 30
+    sauna_heal = 30
 
     print("\n" + "=" * 40)
     print("사우나입니다.")
@@ -569,8 +567,10 @@ def sauna(player, max_hp=100):
     time.sleep(1)
 
     while True:
-        print(f"\n[현재 체력: {player.hp}/{max_hp} | 보유 골드: {player.coin}G]")
-        print("1. 입장하기 (50G - 체력 30 회복)")
+        print(
+            f"\n[현재 체력: {player.hp}/{max_hp} | 보유 골드: {player.coin}G]"
+        )
+        print(f"1. 입장하기 ({price}G - 체력 최대 {sauna_heal} 회복)")
         print("2. 사우나 나가기")
         choice = input("선택: ")
 
@@ -579,7 +579,7 @@ def sauna(player, max_hp=100):
                 print("이미 체력이 가득 차 있습니다.")
             elif player.coin >= price:
                 player.coin -= price
-                player.hp, heal_amount = heal(player, heal)
+                player.hp, heal_amount = heal(player, sauna_heal)
                 print(
                     f"{heal_amount}만큼 체력이 회복되어 현재 체력은 {player.hp}입니다."
                 )
