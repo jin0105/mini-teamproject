@@ -326,11 +326,14 @@ def treasure(player):
         print("상자 속에서 포션이 나왔다!")
         if player.potions == 10:
             print("그러나 포션 가방이 가득 차서 더는 얻을 수 없었다...")
+            print(f"현재 포션 수: {player.potions}개")
+            print("=" * 40)
             stop(player)
-        player.potions += 1
-        print(f"현재 포션 수: {player.potions}개")
-        print("=" * 40)
-        stop(player)
+        else:
+            player.potions += 1
+            print(f"현재 포션 수: {player.potions}개")
+            print("=" * 40)
+            stop(player)
     elif a > 10:
         print("상자 속에서 몬스터가 나왔다!")
         print("=" * 40)
@@ -383,12 +386,16 @@ def join(player):
                 else f"{m_word.word}의 체력: {c_mon.hp}"
             )
             print("=" * 40)
-            time.sleep(1)
-
-            damage = random.randint(5, 15) + int(player.attack)
-            print(
-                f'{p_word.의 if hasattr(p_word, "의") else p_word.word + "의"} 차례 : {damage}만큼의 공격을 했다!'
-            )
+            time.sleep(0.5)
+            base_damage = random.randint(5, 15) + int(player.attack)
+            is_critical = random.random() < 0.1
+            if is_critical:
+                damage = base_damage * 2
+                print(" Critical!!! 2배의 데미지를 입혔습니다!")
+            else:
+                damage = base_damage
+            print(f"{p_word.word}의 차례 : {damage}만큼의 공격을 했다!")
+            time.sleep(0.5)
             time.sleep(1)
 
             c_mon.hp -= damage

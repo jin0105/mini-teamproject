@@ -1,0 +1,12 @@
+[
+  {
+    "id": "4c9441e5-e8c7-4ed6-9235-daf9b6f3c146",
+    "name": "용사",
+    "hp": 100,
+    "potions": 3,
+    "attack": 50,
+    "defence": 50,
+    "coin": 0,
+    "kill_cnt": 0
+  }
+]
