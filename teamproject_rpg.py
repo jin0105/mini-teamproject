@@ -311,7 +311,7 @@ def chest(player, max_potion=10):
         print(f"{playerName.은는} 상자를 열지 않기로 했다...")
         stop(player)
 
-
+#-------------보물상자 이벤트-------------
 def treasure(player):
     print("=" * 40)
     a = random.randint(1, 100)
@@ -343,7 +343,7 @@ def treasure(player):
         print("=" * 40)
         stop(player)
 
-
+#-------------연못 이벤트-------------
 def pond(player):
     playerName = KWord(player.name)
     print("=" * 40)
