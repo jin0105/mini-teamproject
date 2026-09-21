@@ -301,7 +301,7 @@ def nothing(player):
     stop(player)
 
 
-def chest(player, max_potion=10):
+def chest(player):
     playerName = KWord(player.name)
     print("=" * 40)
     time.sleep(1)
