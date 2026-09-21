@@ -523,7 +523,7 @@ def store(player, max_potion=10):
         choice = input("선택: ")
 
         if choice == "6":
-            print("상점을 나갑니다.")
+            print("상점을 나갑니다")
             break
 
         elif choice in item_list:
