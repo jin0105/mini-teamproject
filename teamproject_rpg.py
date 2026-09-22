@@ -108,7 +108,7 @@ ITEM_LIST = json.loads(ITEM_JSON_DATA)
 
 
 # --- 4. 플레이어 관리 ---
-DATA_FILE = "players.json"
+PLAYER_DATA = "players.json"
 
 
 class ManagePlayer:
@@ -136,14 +136,14 @@ class ManagePlayer:
     @staticmethod
     def load_data():
         try:
-            with open(DATA_FILE, "r", encoding="utf-8") as f:
+            with open(PLAYER_DATA, "r", encoding="utf-8") as f:
                 return json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             return []
 
     @staticmethod
     def save_data(data):
-        with open(DATA_FILE, "w", encoding="utf-8") as f:
+        with open(PLAYER_DATA, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
     def to_dict(self):

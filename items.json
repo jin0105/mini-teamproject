@@ -1,0 +1,7 @@
+[
+  {"name": "포션", "price": 5, "type": "potion", "value": 1},
+  {"name": "검", "price": 20, "type": "attack", "value": 10},
+  {"name": "방패", "price": 15, "type": "defence", "value": 5},
+  {"name": "갑옷", "price": 30, "type": "defence", "value": 15},
+  {"name": "신발", "price": 10, "type": "defence", "value": 3}
+]
