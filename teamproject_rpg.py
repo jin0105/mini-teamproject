@@ -1,12 +1,13 @@
+import json
 import random
-import uuid
 import sys
 import time
-import json
+import uuid
 
 
 # --- 1. 한국어 조사 자동 처리 클래스 ---
 class KWord:
+
     def __init__(self, word):
         self.word = str(word)
         last_char = self.word[-1] if self.word else ""
@@ -54,6 +55,7 @@ MONSTER_JSON_DATA = """
 
 
 class Monster:
+
     def __init__(self, name, hp=100, attack=0, defence=0):
         self.name = name
         self.hp = hp
@@ -62,6 +64,7 @@ class Monster:
 
 
 class Monster_Manage:
+
     def __init__(self):
         self.M_list = []
 
@@ -73,23 +76,43 @@ class Monster_Manage:
     def load_from_json_string(self, json_string):
         data = json.loads(json_string)
         for m in data:
-            monster_obj = Monster(m["name"], m["hp"], m["attack"], m["defence"])
-            self.add(monster_obj)
+            self.add(
+                Monster(
+                    m["name"],
+                    m["hp"],
+                    m["attack"],
+                    m["defence"]
+                )
+            )
 
     def list(self):
         return [i.name for i in self.M_list]
 
 
-# --- 몬스터 매니저 초기화 및 데이터 로드 ---
 mon = Monster_Manage()
 mon.load_from_json_string(MONSTER_JSON_DATA)
 
 
-# --- 4. 플레이어 관리 구현 ---
+############################ 아이템 구현
+ITEM_JSON_DATA = """
+[
+  {"name": "포션", "price": 5, "type": "potion", "value": 1},
+  {"name": "검", "price": 20, "type": "attack", "value": 10},
+  {"name": "방패", "price": 15, "type": "defence", "value": 5},
+  {"name": "갑옷", "price": 30, "type": "defence", "value": 15},
+  {"name": "신발", "price": 10, "type": "defence", "value": 3}
+]
+"""
+
+ITEM_LIST = json.loads(ITEM_JSON_DATA)
+
+
+# --- 4. 플레이어 관리 ---
 DATA_FILE = "players.json"
 
 
 class ManagePlayer:
+
     def __init__(
         self,
         name,
@@ -156,25 +179,34 @@ class ManagePlayer:
 
     def save_player(self):
         players = self.load_data()
+
         for idx, p in enumerate(players):
             if p["id"] == self.id:
                 players[idx] = self.to_dict()
                 break
+
         self.save_data(players)
-        choice = input("""저장이 완료되었습니다. 게임으로 돌아가시겠습니까?
-(예 / 아니오) """)
+
+        choice = input(
+            """저장이 완료되었습니다. 게임으로 돌아가시겠습니까?
+(예 / 아니오) """
+        )
+
         if choice == "예":
             return
-        else:
-            sys.exit()
+        sys.exit()
 
     def kill_player(self):
-        players = [p for p in self.load_data() if p["id"] != self.id]
+        players = [
+            p for p in self.load_data()
+            if p["id"] != self.id
+        ]
         self.save_data(players)
 
     @classmethod
     def list_player(cls):
         players = cls.load_data()
+
         if not players:
             print("등록된 캐릭터가 없습니다.")
             return []
@@ -182,65 +214,80 @@ class ManagePlayer:
         for idx, p in enumerate(players, 1):
             print(
                 f"{idx}. {p['name']} (ID: {p['id']})\n"
-                f"   체력: {p['hp']} | 포션: {p['potions']}개 | 공격력: {p['attack']} | 방어력: {p['defence']}"
+                f"   체력: {p['hp']} | 포션: {p['potions']}개 | "
+                f"공격력: {p['attack']} | 방어력: {p['defence']}"
             )
+
         return players
 
     @classmethod
     def del_player(cls):
         players = cls.list_player()
+
         if not players:
             return
 
         try:
             choice = int(input("삭제할 캐릭터 번호를 입력하세요: "))
+
             if 1 <= choice <= len(players):
                 deleted = players.pop(choice - 1)
                 cls.save_data(players)
                 print(f"'{deleted['name']}' 캐릭터가 삭제되었습니다.")
             else:
                 print("올바른 번호 범위가 아닙니다.")
+
         except ValueError:
             print("숫자만 입력해 주세요.")
 
     @classmethod
     def load_player(cls):
         players = cls.list_player()
+
         if not players:
             return
 
         try:
             choice = int(input("플레이할 캐릭터 번호를 입력하세요: "))
+
             if 1 <= choice <= len(players):
                 selected = players[choice - 1]
                 player_obj = cls.from_dict(selected)
                 start_game(player_obj)
                 return player_obj
+
             print("올바른 번호 범위가 아닙니다.")
+
         except ValueError:
             print("숫자만 입력해 주세요.")
 
 
 def start_new():
     player_name = input("이름 입력: ").strip()
+
     if not player_name:
         player_name = "무명 용사"
+
     player = ManagePlayer(player_name)
     player.add_player()
 
 
+# --- 게임 시작 ---
 def start_game(player):
     p_name = KWord(player.name)
+
     while True:
         print("=" * 40)
         print(f"🏰 [시스템] {p_name.이가} 게임에 접속했습니다.")
         print("=" * 40)
+
         print("""
     1. 동굴 탐험
     2. 상점
     3. 사우나
     4. 저장
     """)
+
         choice = input("실행할 번호를 선택하세요: ")
 
         if choice == "1":
@@ -253,20 +300,19 @@ def start_game(player):
             player.save_player()
 
 
-# --- 탐험 및 전투 시스템 ---
-
-
+# --- 탐험 및 전투 ---
 def heal(player, max_heal):
     before_hp = player.hp
-    heal = random.randint(max_heal - 10, max_heal)
-    player.hp += heal
-    player.hp = min(100, player.hp)
-    heal_amount = player.hp - before_hp
-    return player.hp, heal_amount
+    heal_amount = random.randint(max_heal - 10, max_heal)
+    player.hp = min(100, player.hp + heal_amount)
+    return player.hp, player.hp - before_hp
 
 
 def stop(player):
-    action = input("뭘 할까? 1. 동굴 안으로 들어가기  2. 동굴 밖으로 나가기: ")
+    action = input(
+        "뭘 할까? 1. 동굴 안으로 들어가기  2. 동굴 밖으로 나가기: "
+    )
+
     if action == "1":
         walk(player)
 
@@ -280,6 +326,7 @@ def walk(player):
     time.sleep(1)
 
     a = random.randint(1, 100)
+
     if a > 80:
         walk(player)
     elif a > 60:
@@ -302,23 +349,27 @@ def nothing(player):
 
 
 def chest(player):
-    playerName = KWord(player.name)
+    player_name = KWord(player.name)
+
     print("=" * 40)
     time.sleep(1)
     print("보물 상자를 발견했다!")
     print("=" * 40)
     time.sleep(1)
-    choice = input("상자를 여시겠습니까? \n(예/아니오)")
+
+    choice = input("상자를 여시겠습니까?\n(예/아니오) ")
+
     if choice == "예":
         treasure(player)
     else:
-        print(f"{playerName.은는} 상자를 열지 않기로 했다...")
+        print(f"{player_name.은는} 상자를 열지 않기로 했다...")
         stop(player)
 
-#-------------보물상자 이벤트-------------
+
 def treasure(player):
     print("=" * 40)
     a = random.randint(1, 100)
+
     if a > 60:
         coin = random.randint(1, 10)
         print(f"상자 속에서 {coin}G가 나왔다!")
@@ -326,9 +377,11 @@ def treasure(player):
         print(f"현재 코인: {player.coin}G")
         print("=" * 40)
         walk(player)
+
     elif a > 20:
         print("상자 속에서 포션이 나왔다!")
-        if player.potions == 10:
+
+        if player.potions >= 10:
             print("그러나 포션 가방이 가득 차서 더는 얻을 수 없었다...")
             print(f"현재 포션 수: {player.potions}개")
             print("=" * 40)
@@ -338,35 +391,48 @@ def treasure(player):
             print(f"현재 포션 수: {player.potions}개")
             print("=" * 40)
             stop(player)
+
     elif a > 10:
         print("상자 속에서 몬스터가 나왔다!")
         print("=" * 40)
         join(player)
+
     else:
         print("빈 상자였다...")
         print("=" * 40)
         stop(player)
 
-#-------------연못 이벤트-------------
+
 def pond(player):
-    playerName = KWord(player.name)
+    player_name = KWord(player.name)
+
     print("=" * 40)
     print("작은 연못을 발견했다!")
     print("=" * 40)
+
     time.sleep(1)
+
     player.hp, heal_amount = heal(player, 15)
+
     print(
-        f"{playerName.은는} 연못에서 잠시 휴식했다. 체력이 {heal_amount}만큼 회복되었다."
+        f"{player_name.은는} 연못에서 잠시 휴식했다. "
+        f"체력이 {heal_amount}만큼 회복되었다."
     )
     print(f"현재 체력: {player.hp}")
+
     time.sleep(1)
     stop(player)
 
 
 def join(player):
     target = random.choice(mon.M_list)
-    # 전투용 독립 객체 생성
-    c_mon = Monster(target.name, target.hp, target.attack, target.defence)
+
+    c_mon = Monster(
+        target.name,
+        target.hp,
+        target.attack,
+        target.defence
+    )
 
     p_word = KWord(player.name)
     m_word = KWord(c_mon.name)
@@ -374,123 +440,136 @@ def join(player):
     print("=" * 40)
     print(f"{m_word.과와} 마주쳤다!")
     print("=" * 40)
+
     time.sleep(1)
 
     while player.hp > 0 and c_mon.hp > 0:
-        action = input("어떻게 할까? 1. 싸운다  2. 도망간다  3. HP를 회복한다: ")
+        action = input(
+            "어떻게 할까? 1. 싸운다  2. 도망간다  3. HP를 회복한다: "
+        )
+
         if action == "1":
             print("=" * 40)
             print(f"{p_word.은는} 전투를 시작했다.")
             time.sleep(1)
-            print(
-                f"{m_word.의} 체력: {c_mon.hp}"
-                if hasattr(m_word, "의")
-                else f"{m_word.word}의 체력: {c_mon.hp}"
-            )
+
+            print(f"{m_word.의} 체력: {c_mon.hp}")
             print("=" * 40)
-            time.sleep(0.5)
-            base_damage = random.randint(5, 15) + int(player.attack)
-            is_critical = random.random() < 0.1
-            if is_critical:
-                damage = base_damage * 2
-                print(" Critical!!! 2배의 데미지를 입혔습니다!")
-            else:
-                damage = base_damage
-            print(f"{p_word.word}의 차례 : {damage}만큼의 공격을 했다!")
-            time.sleep(0.5)
-            time.sleep(1)
+
+            damage = random.randint(5, 15) + int(player.attack)
+
+            print(
+                f"{p_word.의} 차례 : "
+                f"{damage}만큼의 공격을 했다!"
+            )
 
             c_mon.hp -= damage
+
             print(
-                f'{m_word.의 if hasattr(m_word, "의") else m_word.word + "의"} 남은 체력 : {max(0, c_mon.hp)}'
+                f"{m_word.의} 남은 체력 : "
+                f"{max(0, c_mon.hp)}"
             )
-            time.sleep(1)
 
         elif action == "2":
-            success = random.choice([True, False])
-            if success:
+            if random.choice([True, False]):
                 print("=" * 40)
                 print("도망에 성공했다!")
-                time.sleep(1)
                 print("=" * 40)
                 stop(player)
                 return
-            else:
-                print("=" * 40)
-                print("도망치지 못했다...!")
-                time.sleep(1)
-                print(f"우왕좌왕 하는 사이 {m_word.이가} 공격한다!")
-                print("=" * 40)
-                time.sleep(1)
+
+            print("=" * 40)
+            print("도망치지 못했다...!")
+            print(f"우왕좌왕 하는 사이 {m_word.이가} 공격한다!")
+            print("=" * 40)
 
         elif action == "3":
             if player.potions > 0:
-                print("=" * 40)
                 print(f"가방에 {player.potions}개의 포션이 있다.")
-                use = input("포션을 사용하시겠습니까? 1. 예 2. 아니오: ")
+
+                use = input(
+                    "포션을 사용하시겠습니까? 1. 예 2. 아니오: "
+                )
+
                 if use == "1":
                     player.potions -= 1
                     player.hp, heal_amount = heal(player, 20)
-                    print(f"{p_word.은는} {heal_amount}만큼의 체력을 회복했다!")
-                    time.sleep(1)
+
                     print(
-                        f'{p_word.의 if hasattr(p_word, "의") else p_word.word + "의"} 현재 체력 : {player.hp}'
+                        f"{p_word.은는} "
+                        f"{heal_amount}만큼의 체력을 회복했다!"
                     )
+                    print(
+                        f"{p_word.의} 현재 체력 : {player.hp}"
+                    )
+
                 elif use == "2":
                     print("포션을 마시지 않기로 했다.")
+
             else:
                 print("포션이 없습니다!")
-        else:
-            print(f"잘못된 입력입니다. 당황하는 사이 {m_word.이가} 공격합니다.")
-            time.sleep(1)
 
-        # 몬스터의 반격
+        else:
+            print(
+                f"잘못된 입력입니다. "
+                f"당황하는 사이 {m_word.이가} 공격합니다."
+            )
+
+        # 몬스터 반격
         if c_mon.hp > 0:
-            print("=" * 40)
-            dm = random.randint(5, 15) + int(c_mon.attack)
-            # 플레이어 방어력 반영
-            actual_damage = max(1, dm - player.defence)
+            damage = random.randint(5, 15) + int(c_mon.attack)
+            actual_damage = max(1, damage - player.defence)
+
             player.hp -= actual_damage
+
             print(
-                f'{m_word.의 if hasattr(m_word, "의") else m_word.word + "의"} 공격! : {actual_damage}만큼의 데미지를 받았다.'
+                f"{m_word.의} 공격! : "
+                f"{actual_damage}만큼의 데미지를 받았다."
             )
-            time.sleep(1)
+
             print(
-                f'현재 {p_word.의 if hasattr(p_word, "의") else p_word.word + "의"} 체력 : {max(0, player.hp)}'
+                f"현재 {p_word.의} 체력 : "
+                f"{max(0, player.hp)}"
             )
-            print("=" * 40)
-            time.sleep(1)
 
     print("=" * 40)
+
     if player.hp > 0:
-        print("=" * 40)
-        print(f"당신의 멋진 승리! {m_word.을를} 물리쳤습니다!")
-        time.sleep(1)
+        print(
+            f"당신의 멋진 승리! "
+            f"{m_word.을를} 물리쳤습니다!"
+        )
+
         coin = random.randint(1, 10)
         print(f"전리품으로 금화 {coin}개를 얻었다!")
+
         player.coin += coin
         player.kill_cnt += 1
+
         print(f"현재 처치한 몬스터 수: {player.kill_cnt}/10")
         print("=" * 40)
-        time.sleep(2)
 
-        if player.kill_cnt >= 10:  # 엔딩 조건 (10마리 처치)
+        if player.kill_cnt >= 10:
             print("\n" + "=" * 80)
             print("🎉 🎉 🎉 🎉 🎉 🎉 CONGRATULATION !! 🎉 🎉 🎉 🎉 🎉 🎉")
-            print(" 축하합니다, 당신은 동굴 내부의 모든 몬스터를 무찔렀습니다 !!")
-            time.sleep(1)
+            print("축하합니다, 당신은 동굴 내부의 모든 몬스터를 무찔렀습니다 !!")
             print("         '동굴의 지배자' 훈장을 획득합니다.")
-            time.sleep(1)
-            print(" 마물들이 가득했던 동굴이 다시 평범한 동굴로 돌아갑니다.")
-            print(" 당신은 또 다른 마물들을 찾아 여행을 떠납니다....The End...")
+            print("마물들이 가득했던 동굴이 다시 평범한 동굴로 돌아갑니다.")
+            print("당신은 또 다른 마물들을 찾아 여행을 떠납니다....The End...")
             print("=" * 80 + "\n")
             sys.exit()
+
         stop(player)
+
     else:
         print(f"체력이 바닥났습니다... {p_word.이가} 죽었습니다.")
+
         time.sleep(1)
+
         player.kill_player()
+
         print("=" * 40)
+
         time.sleep(1)
         main()
 
@@ -500,60 +579,69 @@ def store(player, max_potion=10):
     print("\n" + "=" * 40)
     print("상점입니다.")
     print("=" * 40)
-    time.sleep(1)
-
-    item_list = {
-        "1": ["포션", 5, "potion", 1],
-        "2": ["검", 20, "attack", 10],
-        "3": ["방패", 15, "defence", 5],
-        "4": ["갑옷", 30, "defence", 15],
-        "5": ["신발", 10, "defence", 3],
-    }
 
     while True:
         print(
-            f"\n[현재 골드: {player.coin}G | 포션: {player.potions}개 | 공격력: {player.attack} | 방어력: {player.defence}]"
+            f"\n[현재 골드: {player.coin}G | "
+            f"포션: {player.potions}개 | "
+            f"공격력: {player.attack} | "
+            f"방어력: {player.defence}]"
         )
+
         print("-" * 40)
 
-        for key, (name, price, stat_type, stat_val) in item_list.items():
-            print(f"{key}. {name} 구매 {price}G")
-        print("6. 상점 나가기")
+        for i, item in enumerate(ITEM_LIST, 1):
+            print(
+                f"{i}. {item['name']} 구매 "
+                f"{item['price']}G"
+            )
+
+        print(f"{len(ITEM_LIST) + 1}. 상점 나가기")
 
         choice = input("선택: ")
 
-        if choice == "6":
-            print("상점을 나갑니다")
+        if choice == str(len(ITEM_LIST) + 1):
+            print("상점을 나갑니다.")
             break
 
-        elif choice in item_list:
-            for key, (name, price, stat_type, stat_val) in item_list.items():
-                if choice == key:
-                    item_word = KWord(name)
-                    if choice == "1" and player.potions >= max_potion:
-                        print("포션을 더 이상 소지할 수 없습니다.")
-                    elif player.coin < price:
-                        print("골드가 부족합니다.")
-                    else:
-                        player.coin -= price
-                        if choice == "1":
-                            player.potions += 1
-                            print(
-                                f"{item_word.을를} 구매했습니다. (현재 포션: {player.potions}개)"
-                            )
-                        else:
-                            if stat_type == "attack":
-                                player.attack += stat_val
-                                print(
-                                    f"{item_word.을를} 구매 및 장착하여 공격력이 {stat_val} 증가했습니다. (현재 공격력: {player.attack})"
-                                )
-                            elif stat_type == "defence":
-                                player.defence += stat_val
-                                print(
-                                    f"{item_word.을를} 구매 및 장착하여 방어력이 {stat_val} 증가했습니다. (현재 방어력: {player.defence})"
-                                )
-        else:
+        try:
+            item = ITEM_LIST[int(choice) - 1]
+        except (ValueError, IndexError):
             print("잘못된 입력입니다.")
+            continue
+
+        if item["type"] == "potion" and player.potions >= max_potion:
+            print("포션을 더 이상 소지할 수 없습니다.")
+            continue
+
+        if player.coin < item["price"]:
+            print("골드가 부족합니다.")
+            continue
+
+        player.coin -= item["price"]
+
+        item_word = KWord(item["name"])
+
+        if item["type"] == "potion":
+            player.potions += item["value"]
+            print(
+                f"{item_word.을를} 구매했습니다. "
+                f"(현재 포션: {player.potions}개)"
+            )
+
+        elif item["type"] == "attack":
+            player.attack += item["value"]
+            print(
+                f"{item_word.을를} 구매 및 장착하여 "
+                f"공격력이 {item['value']} 증가했습니다."
+            )
+
+        elif item["type"] == "defence":
+            player.defence += item["value"]
+            print(
+                f"{item_word.을를} 구매 및 장착하여 "
+                f"방어력이 {item['value']} 증가했습니다."
+            )
 
 
 # --- 사우나 ---
@@ -564,31 +652,41 @@ def sauna(player, max_hp=100):
     print("\n" + "=" * 40)
     print("사우나입니다.")
     print("=" * 40)
-    time.sleep(1)
 
     while True:
         print(
-            f"\n[현재 체력: {player.hp}/{max_hp} | 보유 골드: {player.coin}G]"
+            f"\n[현재 체력: {player.hp}/{max_hp} | "
+            f"보유 골드: {player.coin}G]"
         )
-        print(f"1. 입장하기 ({price}G - 체력 최대 {sauna_heal} 회복)")
+
+        print(
+            f"1. 입장하기 "
+            f"({price}G - 체력 최대 {sauna_heal} 회복)"
+        )
         print("2. 사우나 나가기")
+
         choice = input("선택: ")
 
         if choice == "1":
             if player.hp >= max_hp:
                 print("이미 체력이 가득 차 있습니다.")
+
             elif player.coin >= price:
                 player.coin -= price
                 player.hp, heal_amount = heal(player, sauna_heal)
+
                 print(
-                    f"{heal_amount}만큼 체력이 회복되어 현재 체력은 {player.hp}입니다."
+                    f"{heal_amount}만큼 체력이 회복되어 "
+                    f"현재 체력은 {player.hp}입니다."
                 )
+
             else:
                 print("골드가 부족합니다.")
 
         elif choice == "2":
             print("사우나를 나갑니다.")
             break
+
         else:
             print("잘못된 입력입니다.")
 
@@ -599,12 +697,16 @@ def main():
         print("=" * 40)
         print("미니 RPG 게임")
         print("=" * 40)
+
         print("""1. 새로운 시작
 2. 플레이어 삭제
 3. 플레이어 로드
 4. 게임 종료""")
+
         print("=" * 40)
+
         choice = input("실행할 번호를 입력하세요: ")
+
         if choice == "1":
             start_new()
         elif choice == "2":
@@ -614,8 +716,6 @@ def main():
         elif choice == "4":
             print("게임을 종료합니다.")
             sys.exit()
-        else:
-            pass
 
 
 if __name__ == "__main__":
